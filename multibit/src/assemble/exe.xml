@@ -1,0 +1,25 @@
+<assembly>
+  <id>exe-full</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory></outputDirectory>
+      <outputFileNameMapping></outputFileNameMapping>
+      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <excludes>
+        <exclude>org.codehaus.izpack:*</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <directory>target/classes</directory>
+      <outputDirectory></outputDirectory>
+    </fileSet>
+  </fileSets>
+ </assembly>

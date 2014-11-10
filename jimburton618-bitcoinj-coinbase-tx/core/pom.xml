@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2012 Google Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.google</groupId>
+        <artifactId>bitcoinj-parent</artifactId>
+        <version>0.11.2-MB-ALICE</version>
+    </parent>
+
+    <artifactId>bitcoinj</artifactId>
+
+    <name>bitcoinj</name>
+    <description>A Java Bitcoin library</description>
+
+    <packaging>jar</packaging>
+
+    <url>https://code.google.com/p/bitcoinj</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- Dummy block to make Maven Central happy: authors list is in AUTHORS -->
+    <developers>
+        <developer>
+            <name>The bitcoinj team</name>
+            <email>bitcoinj@googlegroups.com</email>
+        </developer>
+    </developers>
+
+    <profiles>
+        <profile>
+            <id>update-protobuf</id>
+            <activation>
+                <property>
+                    <name>updateProtobuf</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>compile-protoc</id>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <tasks>
+                                        <path id="proto.path">
+                                            <fileset dir="src">
+                                                <include name="**/*.proto"/>
+                                            </fileset>
+                                        </path>
+                                        <pathconvert pathsep=" " property="proto.files" refid="proto.path"/>
+                                        <exec executable="/usr/local/bin/protoc" failonerror="true">
+                                            <arg value="--java_out=${project.basedir}/src/main/java"/>
+                                            <arg value="-I${project.basedir}/src"/>
+                                            <arg line="${proto.files}"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <!-- Surefire plugin specified for Maven2 compatibility -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.9</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Verify the dependency chain: see https://github.com/gary-rowe/BitcoinjEnforcerRules for
+               more information on this.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <digestRule implementation="uk.co.froot.maven.enforcer.DigestRule">
+
+                                    <!-- Create a snapshot to build the list of URNs below -->
+                                    <buildSnapshot>true</buildSnapshot>
+
+                                    <!-- List of required hashes -->
+                                    <!-- Format is URN of groupId:artifactId:version:type:classifier:scope:hash -->
+                                    <!-- classifier is "null" if not present -->
+                                    <urns>
+                                        <urn>com.google.code.findbugs:jsr305:1.3.9:jar:null:compile:40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf</urn>
+                                        <urn>com.google.guava:guava:13.0.1:jar:null:compile:0d6f22b1e60a2f1ef99e22c9f5fde270b2088365</urn>
+                                        <urn>com.h2database:h2:1.3.167:jar:null:compile:d3867d586f087e53eb12fc65e5693d8ee9a5da17</urn>
+                                        <urn>com.lambdaworks:scrypt:1.3.3:jar:null:compile:06d6813de41e177189e1722717979b4fb5454b1d</urn>
+                                         <urn>io.netty:netty:3.6.3.Final:jar:null:compile:1eebfd2f79dd72c44d09d9917c549c60322462b8</urn>
+                                        <urn>net.sf.jopt-simple:jopt-simple:4.3:jar:null:compile:88ffca34311a6564a98f14820431e17b4382a069</urn>
+                                        <urn>com.google.protobuf:protobuf-java:2.5.0:jar:null:compile:a10732c76bfacdbd633a7eb0f7968b1059a65dfa</urn>
+                                        <urn>com.h2database:h2:1.3.167:jar:null:compile:d3867d586f087e53eb12fc65e5693d8ee9a5da17</urn>
+                                        <urn>com.lambdaworks:scrypt:1.3.3:jar:null:compile:06d6813de41e177189e1722717979b4fb5454b1d</urn>
+                                        <urn>com.madgag:sc-light-jdk15on:1.47.0.2:jar:null:compile:d5c98671cc97fa0d928be1c7eb5edd3fb95d3234</urn>
+                                        <urn>net.jcip:jcip-annotations:1.0:jar:null:compile:afba4942caaeaf46aab0b976afd57cc7c181467e</urn>
+                                        <urn>org.slf4j:slf4j-api:1.7.5:jar:null:compile:6b262da268f8ad9eff941b25503a9198f0a0ac93</urn>
+                                        <urn>org.slf4j:slf4j-jdk14:1.7.5:jar:null:runtime:33cf4abac351aa45dd130d31a1e7e33fbbba4762</urn>
+
+                                        <!-- A check for the rules themselves -->
+                                        <urn>uk.co.froot.maven.enforcer:digest-enforcer-rules:0.0.1:jar:null:runtime:16a9e04f3fe4bb143c42782d07d5faf65b32106f</urn>
+                                    </urns>
+                                </digestRule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <!-- Ensure we download the enforcer rules -->
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.co.froot.maven.enforcer</groupId>
+                        <artifactId>digest-enforcer-rules</artifactId>
+                        <version>0.0.1</version>
+                    </dependency>
+                </dependencies>
+
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- bitcoinj consumers are expected to provide their own SLF4J adapters
+             such as logback, slf4j-log4j12, slf4j-jcl and so on
+             see http://www.slf4j.org/faq.html -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.167</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.madgag</groupId>
+            <artifactId>sc-light-jdk15on</artifactId>
+            <version>1.47.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>1.3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lambdaworks</groupId>
+            <artifactId>scrypt</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+
+        <!-- Add in to test/use Postgres blockstore -->
+        <!--
+        <dependency>
+          <groupId>postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>9.1-901.jdbc4</version>
+        </dependency>
+        -->
+    </dependencies>
+
+</project>

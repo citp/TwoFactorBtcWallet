@@ -1,0 +1,169 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.google</groupId>
+  <artifactId>bitcoinj-parent</artifactId>
+  <version>0.11.2-MB-ALICE</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>core</module>
+    <module>examples</module>
+    <module>tools</module>
+  </modules>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+  <scm>
+    <connection>scm:git:https://code.google.com/p/bitcoinj/</connection>
+    <developerConnection>scm:git:https://code.google.com/p/bitcoinj/</developerConnection>
+    <url>http://code.google.com/p/bitcoinj/source/browse</url>
+  </scm>
+
+  <name>bitcoinj Parent</name>
+  <description>Provides the common configuration for the BitCoinJ modules</description>
+  <url>http://code.google.com/p/bitcoinj</url>
+
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>Google Code</system>
+    <url>http://code.google.com/p/bitcoinj/issues/list</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>bitcoinj Google Group</name>
+      <post>https://groups.google.com/forum/#!forum/bitcoinj</post>
+    </mailingList>
+  </mailingLists>
+
+  <repositories>
+    <repository>
+        <id>bitcoinj-distribution</id>
+        <url>https://distribution.bitcoinj.googlecode.com/git/releases</url>
+    </repository>
+  </repositories>
+
+  <!-- Common build plugin configuration -->
+  <build>
+    <plugins>
+      <!-- Ensure compilation is done under Java 6 for backwards compatibility -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+    <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <!-- Third-party dependencies -->
+      <sc-light-jdk15on.version>1.47.0.2</sc-light-jdk15on.version>
+      <easymock.version>3.0</easymock.version>
+      <junit.version>4.11</junit.version>
+      <slf4j.version>1.7.5</slf4j.version>
+      <derby.version>10.8.2.2</derby.version>
+      <protobuf.version>2.5.0</protobuf.version>
+      <netty.version>3.6.3.Final</netty.version>
+      <generated.sourceDirectory>gen</generated.sourceDirectory>
+    </properties>
+
+  <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>${easymock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <!-- BitCoinJ consumers are expected to provide their own SLF4J adapters
+             such as logback, slf4j-log4j12, slf4j-jcl and so on
+             see http://www.slf4j.org/faq.html -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>${derby.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+	    <groupId>io.netty</groupId>
+	    <artifactId>netty</artifactId>
+	    <version>${netty.version}</version>
+	    <scope>compile</scope>
+       </dependency>
+
+        <dependency>
+            <groupId>com.madgag</groupId>
+            <artifactId>sc-light-jdk15on</artifactId>
+            <version>${sc-light-jdk15on.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>1.3.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <version>1.0</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>com.lambdaworks</groupId>
+            <artifactId>scrypt</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+    </dependencies>
+</project>
