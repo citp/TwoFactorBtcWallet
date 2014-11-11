@@ -3,7 +3,8 @@ package threshold.mr04.data;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import org.spongycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.math.ec.ECPoint;
 
 public class Round3Message implements Serializable {
     
@@ -11,10 +12,10 @@ public class Round3Message implements Serializable {
      * 
      */
     private static final long serialVersionUID = 1L;
-    private final ECPoint r;
+    private final byte[] rRaw;
     private final BigInteger z1;
     private final BigInteger z2;
-    private final ECPoint y;
+    private final byte[] yRaw;
     private final BigInteger e;
     private final BigInteger s1;
     private final BigInteger s2;
@@ -29,10 +30,10 @@ public class Round3Message implements Serializable {
     public Round3Message(ECPoint r, BigInteger z1, BigInteger z2, ECPoint y, BigInteger e,
             BigInteger s1, BigInteger s2, BigInteger s3, BigInteger t1, BigInteger t2,
             BigInteger t3, BigInteger t4) {
-        this.r = r;
+        this.rRaw = r.getEncoded();
         this.z1 = z1;
         this.z2 = z2;
-        this.y = y;
+        this.yRaw = y.getEncoded();
         this.e = e;
         this.s1 = s1;
         this.s2 = s2;
@@ -44,8 +45,8 @@ public class Round3Message implements Serializable {
 
     }
 
-    public ECPoint getR() {
-        return r;
+    public ECPoint getR(ECCurve curve) {
+    	return curve.decodePoint(rRaw);
     }
 
     public BigInteger getZ1() {
@@ -56,8 +57,8 @@ public class Round3Message implements Serializable {
         return z2;
     }
 
-    public ECPoint getY() {
-        return y;
+    public ECPoint getY(ECCurve curve) {
+    	return curve.decodePoint(yRaw);
     }
 
     public BigInteger getE() {

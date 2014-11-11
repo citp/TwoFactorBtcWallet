@@ -4,14 +4,22 @@
 	<groupId>citp</groupId>
 	<artifactId>EcdsaTwoPartyThresholdSignature</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>ECDSA Two Party Threshold Signatures</name>
 	<description>Based on Mackenzie and Reiter (2004)</description>
 
 	<dependencies>
+	    <!--
 		<dependency>
-			<groupId>com.madgag.spongycastle</groupId>
-			<artifactId>core</artifactId>
-			<version>1.51.0.0</version>
+			<groupId>com.madgag</groupId>
+            <artifactId>sc-light-jdk15on</artifactId>
+            <version>1.47.0.2</version>
 		</dependency>
+		-->
+		<dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.51</version>
+        </dependency>
 	</dependencies>
 </project>

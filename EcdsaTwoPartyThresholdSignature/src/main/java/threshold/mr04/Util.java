@@ -1,22 +1,27 @@
 package threshold.mr04;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import org.spongycastle.asn1.sec.SECNamedCurves;
-import org.spongycastle.asn1.x9.X9ECParameters;
-import org.spongycastle.crypto.params.ECDomainParameters;
-import org.spongycastle.crypto.params.ECPublicKeyParameters;
-import org.spongycastle.crypto.signers.ECDSASigner;
-import org.spongycastle.math.ec.ECPoint;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.asn1.x9.X9ECPoint;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.math.ec.ECPoint;
 
 import threshold.mr04.data.PublicParameters;
 
 public class Util {
-
+	
     /**
      * Method taken (renamed) from SpongyCastle ECDSASigner class. Cannot call
      * from there since it's private and non static.
@@ -64,8 +69,8 @@ public class Util {
     }
 
     public static byte[] getBytes(ECPoint e) { // ASK ROSARIO
-        byte[] x = e.normalize().getXCoord().toBigInteger().toByteArray();
-        byte[] y = e.normalize().getYCoord().toBigInteger().toByteArray();
+        byte[] x = e.getX().toBigInteger().toByteArray();
+        byte[] y = e.getY().toBigInteger().toByteArray();
         byte[] output = new byte[x.length + y.length];
         System.arraycopy(x, 0, output, 0, x.length);
         System.arraycopy(y, 0, output, x.length, y.length);

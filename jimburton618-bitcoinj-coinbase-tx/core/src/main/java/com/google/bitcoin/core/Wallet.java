@@ -44,8 +44,8 @@ import org.multibit.store.MultiBitWalletProtobufSerializer;
 import org.multibit.store.MultiBitWalletVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
-import org.spongycastle.util.encoders.Hex;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.encoders.Hex;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -107,8 +107,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
     private static final Logger log = LoggerFactory.getLogger(Wallet.class);
     private static final long serialVersionUID = 2L;
     private static final int MINIMUM_BLOOM_DATA_LENGTH = 8;
-
-    protected final ReentrantLock lock = Threading.lock("wallet");
+    transient protected ReentrantLock lock = Threading.lock("wallet");
 
     // The various pools below give quick access to wallet-relevant transactions by the state they're in:
     //
@@ -198,7 +197,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
     private final HashMap<String, WalletExtension> extensions;
     // Object that performs risk analysis of received pending transactions. We might reject transactions that seem like
     // a high risk of being a double spending attack.
-    private RiskAnalysis.Analyzer riskAnalyzer = DefaultRiskAnalysis.FACTORY;
+    transient private RiskAnalysis.Analyzer riskAnalyzer = DefaultRiskAnalysis.FACTORY;
 
     /**
      * Creates a new, empty wallet with no keys and no transactions. If you want to restore a wallet from disk instead,
@@ -247,7 +246,9 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
     }
 
     private void createTransientState() {
+    	lock = Threading.lock("wallet");
         ignoreNextNewBlock = new HashSet<Sha256Hash>();
+        eventListeners = new CopyOnWriteArrayList<ListenerRegistration<WalletEventListener>>();
         txConfidenceListener = new TransactionConfidence.Listener() {
             @Override
             public void onConfidenceChanged(Transaction tx, TransactionConfidence.Listener.ChangeReason reason) {

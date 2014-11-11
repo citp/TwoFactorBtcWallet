@@ -130,12 +130,19 @@
 	    <scope>compile</scope>
        </dependency>
 
+        <!--  
         <dependency>
             <groupId>com.madgag</groupId>
             <artifactId>sc-light-jdk15on</artifactId>
             <version>${sc-light-jdk15on.version}</version>
         </dependency>
-
+        -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.51</version>
+        </dependency>
+        
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>

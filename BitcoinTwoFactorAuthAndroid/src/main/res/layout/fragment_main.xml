@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relativeLayout"
+    android:padding="10sp"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <ListView
+        android:padding="10sp"
+        android:id="@+id/listView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/btn_new_wallet" >
+    </ListView>
+
+    <Button
+        android:id="@+id/btn_new_wallet"
+        style="@style/ButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/btn_green"
+        android:text="@string/new_wallet"
+        android:onClick="newWallet"
+        android:width="170dp"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

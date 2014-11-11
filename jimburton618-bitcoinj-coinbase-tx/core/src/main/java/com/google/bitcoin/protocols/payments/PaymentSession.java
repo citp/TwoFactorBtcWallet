@@ -30,11 +30,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.bitcoin.protocols.payments.Protos;
-import org.spongycastle.asn1.ASN1String;
-import org.spongycastle.asn1.x500.AttributeTypeAndValue;
-import org.spongycastle.asn1.x500.RDN;
-import org.spongycastle.asn1.x500.X500Name;
-import org.spongycastle.asn1.x500.style.RFC4519Style;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.RFC4519Style;
 
 import javax.annotation.Nullable;
 import javax.security.auth.x500.X500Principal;
@@ -415,7 +415,7 @@ public class PaymentSession {
         }
 
         private @Nullable String getNameFromCert(TrustAnchor rootAuthority) throws PaymentRequestException.PkiVerificationException {
-            org.spongycastle.asn1.x500.X500Name name = new X500Name(rootAuthority.getTrustedCert().getSubjectX500Principal().getName());
+            org.bouncycastle.asn1.x500.X500Name name = new X500Name(rootAuthority.getTrustedCert().getSubjectX500Principal().getName());
             String commonName = null, org = null, location = null, country = null;
             for (RDN rdn : name.getRDNs()) {
                 AttributeTypeAndValue pair = rdn.getFirst();
@@ -498,7 +498,7 @@ public class PaymentSession {
             // different parts of the certificate name except for parsing the string. That's hard because of various
             // custom escaping rules and the usual crap. So, use Bouncy Castle to re-parse the string into binary form
             // again and then look for the names we want. Fail!
-            org.spongycastle.asn1.x500.X500Name name = new X500Name(principal.getName());
+            org.bouncycastle.asn1.x500.X500Name name = new X500Name(principal.getName());
             String entityName = null, orgName = null;
             for (RDN rdn : name.getRDNs()) {
                 AttributeTypeAndValue pair = rdn.getFirst();

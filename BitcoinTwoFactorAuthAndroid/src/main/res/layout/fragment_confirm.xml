@@ -1,0 +1,97 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.princeton.bitcointwofactorauth.android.ConfirmActivity$PlaceholderFragment">
+    
+<TableLayout android:id="@+id/fragment_transaction"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="1"
+    android:layout_alignParentTop="true">
+
+    <TableRow
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:padding="3dip"
+            android:text="@string/to_label"
+            android:textSize="@dimen/text_size" />
+
+        <TextView
+            android:id="@+id/to_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="@string/to_value"
+            android:textSize="@dimen/text_size" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:padding="3dip"
+            android:text="@string/from_label"
+            android:textSize="@dimen/text_size" />
+
+        <TextView
+            android:id="@+id/from_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="@string/from_value"
+            android:textSize="@dimen/text_size" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_margin="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:padding="3dip"
+            android:text="@string/value_label"
+            android:textSize="@dimen/text_size" />
+
+        <TextView
+            android:id="@+id/value_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="@string/value_value"
+            android:textSize="@dimen/text_size" />
+
+    </TableRow>
+</TableLayout>
+<Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="confirmTransaction"
+        android:layout_above="@+id/button1"
+        android:text="Confirm" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="rejectTransaction"
+        android:layout_alignParentBottom="true"
+        android:text="Reject" />
+</RelativeLayout>

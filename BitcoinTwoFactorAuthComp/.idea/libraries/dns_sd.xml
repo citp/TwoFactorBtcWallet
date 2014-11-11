@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="dns_sd">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/Downloads/dns_sd.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

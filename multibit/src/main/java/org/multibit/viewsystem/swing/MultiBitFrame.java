@@ -781,6 +781,14 @@ public class MultiBitFrame extends JFrame implements ViewSystem, ApplicationList
         menuItem.setFont(FontSizer.INSTANCE.getAdjustedDefaultFont());
         menuItem.setComponentOrientation(componentOrientation);
         fileMenu.add(menuItem);
+        
+     // Create new remote wallet action.
+        CreateRemoteWalletSubmitAction createNewRemoteWalletAction = new CreateRemoteWalletSubmitAction(this.bitcoinController,
+                ImageLoader.createImageIcon(ImageLoader.CREATE_NEW_ICON_FILE), this);
+        menuItem = new JMenuItem(createNewRemoteWalletAction);
+        menuItem.setFont(FontSizer.INSTANCE.getAdjustedDefaultFont());
+        menuItem.setComponentOrientation(componentOrientation);
+        fileMenu.add(menuItem);
 
         // Open wallet action.
         OpenWalletAction openWalletAction = new OpenWalletAction(this.bitcoinController,

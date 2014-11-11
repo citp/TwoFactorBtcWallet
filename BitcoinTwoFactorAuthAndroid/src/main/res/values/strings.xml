@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="new_wallet">New Wallet</string>
+    
+    <string name="app_name">Two Factor Wallet</string>
+    <string name="hello_world">Hello Steven!</string>
+    <string name="action_settings">Settings</string>
+    <string name="to_label">To: </string>
+    <string name="from_label">From: </string>
+    <string name="value_label">Value: </string>
+    <string name="to_value">2PV2ijgBUh8HfKvfA1mQvvBngA8rRFuKbv</string>
+    <string name="from_value">3PV2ijgBUh8HfKvfA1mQvvBngA8rRFuKbv</string>
+    <string name="value_value">.001</string>
+    <string name="waiting_label">Waiting for transaction</string>
+    <string name="title_activity_confirm">Confirm Transaction</string>
+
+    <style name="ButtonText">
+	    <item name="android:layout_width">fill_parent</item>
+	    <item name="android:layout_height">wrap_content</item>
+	    <item name="android:textColor">#ffffff</item>
+	    <item name="android:gravity">center</item>
+	    <item name="android:layout_margin">3dp</item>
+	    <item name="android:textSize">30sp</item>
+	    <item name="android:textStyle">bold</item>
+	    <item name="android:shadowColor">#000000</item>
+	    <item name="android:shadowDx">1</item>
+	    <item name="android:shadowDy">1</item>
+	    <item name="android:shadowRadius">2</item>
+	</style>
+    
+</resources>

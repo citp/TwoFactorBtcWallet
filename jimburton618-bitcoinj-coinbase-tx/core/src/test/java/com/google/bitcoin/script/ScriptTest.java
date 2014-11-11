@@ -23,7 +23,7 @@ import com.google.bitcoin.params.TestNet3Params;
 import com.google.common.collect.Lists;
 
 import org.junit.Test;
-import org.spongycastle.util.encoders.Hex;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

@@ -17,6 +17,7 @@ package org.multibit.viewsystem.swing.action;
 
 import com.google.bitcoin.core.*;
 import com.google.bitcoin.crypto.KeyCrypterException;
+
 import org.multibit.controller.bitcoin.BitcoinController;
 import org.multibit.model.bitcoin.WalletBusyListener;
 import org.multibit.utils.WhitespaceTrimmer;
@@ -24,11 +25,16 @@ import org.multibit.viewsystem.swing.MultiBitFrame;
 import org.multibit.viewsystem.swing.view.panels.SignMessagePanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.CharBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -145,14 +151,31 @@ public class SignMessageSubmitAction extends MultiBitSubmitAction implements Wal
                 KeyParameter aesKey = null;
                 if (signingKey.isEncrypted()) {
                     aesKey = signingKey.getKeyCrypter().deriveKey(walletPassword);
-                    signingKey = signingKey.decrypt(signingKey.getKeyCrypter(), aesKey);
+                	signingKey = signingKey.decrypt(signingKey.getKeyCrypter(), aesKey);
+                }
+                log.debug("Trying to replace key");
+                String filename = Utils.bytesToHexString(signingKey.getPubKeyHash());
+                FileInputStream fis = new FileInputStream(filename +".key");
+                ObjectInputStream in = new ObjectInputStream(fis);
+                RemoteECKey rECKey = (RemoteECKey) in.readObject();
+                in.close();
+                fis.close();
+                RemoteECKey signingKeyR = null;
+                if (rECKey != null && Arrays.equals(signingKey.getPubKey(), rECKey.getPubKey())) {
+                    log.debug("Found key to replace");
+                    signingKeyR = rECKey;
                 }
 
-                String signatureBase64 = signingKey.signMessage(messageText, aesKey);
+                String signatureBase64 = signingKeyR.signMessage(messageText, aesKey);
+                System.out.println("Signature returned");
+                if (signatureBase64 == null) {
+                	System.out.println("Signature returned null");
+                	throw new KeyCrypterException("Transaction rejected by phone");
+                }
                 if (signMessagePanel.getSignatureTextArea() != null) {
                     signMessagePanel.getSignatureTextArea().setText(signatureBase64);
                     signMessagePanel.setMessageText1(controller.getLocaliser().getString("signMessageAction.success"));
-                    signMessagePanel.setMessageText2(" "); 
+                    signMessagePanel.setMessageText2(" ");
 
                 }        
             }
@@ -162,7 +185,16 @@ public class SignMessageSubmitAction extends MultiBitSubmitAction implements Wal
             logError(e);
         } catch (AddressFormatException e) {
             logError(e);
-        } 
+        } catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
     }
     
     private void logError(Exception e) {

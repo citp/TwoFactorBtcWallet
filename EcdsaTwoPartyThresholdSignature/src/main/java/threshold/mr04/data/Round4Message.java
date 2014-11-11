@@ -1,17 +1,20 @@
 package threshold.mr04.data;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
-import org.spongycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.math.ec.ECPoint;
 
-public class Round4Message {
+public class Round4Message implements Serializable {
     
-    private final BigInteger u;
+	private static final long serialVersionUID = 2024431130585981353L;
+	private final BigInteger u;
     private final BigInteger uPrime;
     private final BigInteger z1;
     private final BigInteger z2;
     private final BigInteger z3;
-    private final ECPoint y;
+    private final byte[] yRaw;
     private final BigInteger e;
     private final BigInteger s1;
     private final BigInteger s2;
@@ -31,7 +34,7 @@ public class Round4Message {
         this.z1 = z1;
         this.z2 = z2;
         this.z3 = z3;
-        this.y = y;
+        this.yRaw = y.getEncoded();
         this.e = e;
         this.s1 = s1;
         this.s2 = s2;
@@ -64,8 +67,8 @@ public class Round4Message {
         return z3;
     }
 
-    public ECPoint getY() {
-        return y;
+    public ECPoint getY(ECCurve curve) {
+    	return curve.decodePoint(yRaw);
     }
 
     public BigInteger getE() {

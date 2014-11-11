@@ -15,6 +15,7 @@ package threshold.mr04;
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -29,7 +30,7 @@ import java.security.SecureRandom;
  * @author Kun Liu (kunliu1@cs.umbc.edu)
  * @version 1.0
  */
-public class Paillier {
+public class Paillier implements Serializable {
 
     /**
      * p and q are two large primes. 

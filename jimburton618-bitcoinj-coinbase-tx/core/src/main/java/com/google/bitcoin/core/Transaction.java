@@ -17,17 +17,20 @@
 package com.google.bitcoin.core;
 
 import com.google.bitcoin.IsMultiBitClass;
+import com.google.bitcoin.core.Utils;
 import com.google.bitcoin.core.TransactionConfidence.ConfidenceType;
 import com.google.bitcoin.crypto.TransactionSignature;
 import com.google.bitcoin.script.Script;
 import com.google.bitcoin.script.ScriptBuilder;
 import com.google.bitcoin.script.ScriptOpCodes;
 import com.google.common.collect.ImmutableMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -806,7 +809,7 @@ public class Transaction extends ChildMessage implements Serializable, IsMultiBi
         // to figure out which key to sign with.
 
         TransactionSignature[] signatures = new TransactionSignature[inputs.size()];
-        ECKey[] signingKeys = new ECKey[inputs.size()];
+        RemoteECKey[] signingKeys = new RemoteECKey[inputs.size()];
         for (int i = 0; i < inputs.size(); i++) {
             TransactionInput input = inputs.get(i);
             // We don't have the connected output, we assume it was signed already and move on
@@ -827,10 +830,38 @@ public class Transaction extends ChildMessage implements Serializable, IsMultiBi
             if (input.getScriptBytes().length != 0)
                 log.warn("Re-signing an already signed transaction! Be sure this is what you want.");
             // Find the signing key we'll need to use.
-            ECKey key = input.getOutpoint().getConnectedKey(wallet);
+            ECKey keyT = input.getOutpoint().getConnectedKey(wallet);
+            log.debug("Trying to replace key");
+            RemoteECKey rECKey = null;
+			try {
+				String filename = Utils.bytesToHexString(keyT.getPubKeyHash());
+				FileInputStream fis = new FileInputStream(filename +".key");
+				ObjectInputStream in = new ObjectInputStream(fis);
+		        rECKey = (RemoteECKey) in.readObject();
+		        in.close();
+		        fis.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        
+	        RemoteECKey key = null;
+	        if (keyT != null && rECKey != null  && Arrays.equals(keyT.getPubKey(), rECKey.getPubKey())) {
+	        	log.debug("Found key to replace");
+        		key = rECKey;
+        	} else {
+        		log.error("Didn't find key to replace");
+        	}
             // This assert should never fire. If it does, it means the wallet is inconsistent.
             checkNotNull(key, "Transaction exists in wallet that we cannot redeem: %s", input.getOutpoint().getHash());
             // Keep the key around for the script creation step below.
+            
             signingKeys[i] = key;
             // The anyoneCanPay feature isn't used at the moment.
             boolean anyoneCanPay = false;
@@ -885,11 +916,11 @@ public class Transaction extends ChildMessage implements Serializable, IsMultiBi
      * @param anyoneCanPay Signing mode, see the SigHash enum for documentation.
      * @return A newly calculated signature object that wraps the r, s and sighash components.
      */
-    public synchronized  TransactionSignature calculateSignature(int inputIndex, ECKey key, @Nullable KeyParameter aesKey,
+    public synchronized  TransactionSignature calculateSignature(int inputIndex, RemoteECKey key, @Nullable KeyParameter aesKey,
                                                                  byte[] connectedPubKeyScript,
                                                                  SigHash hashType, boolean anyoneCanPay) {
         Sha256Hash hash = hashForSignature(inputIndex, connectedPubKeyScript, hashType, anyoneCanPay);
-        return new TransactionSignature(key.sign(hash, aesKey), hashType, anyoneCanPay);
+        return new TransactionSignature(key.sign(hash, aesKey, this, inputIndex, connectedPubKeyScript, hashType, anyoneCanPay), hashType, anyoneCanPay);
     }
 
     /**

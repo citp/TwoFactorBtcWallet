@@ -6,11 +6,17 @@ import static threshold.mr04.Util.randomFromZn;
 import static threshold.mr04.Util.randomFromZnStar;
 import static threshold.mr04.Util.sha256Hash;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import org.spongycastle.crypto.params.ECDomainParameters;
-import org.spongycastle.math.ec.ECPoint;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.math.ec.ECPoint;
 
 import threshold.mr04.data.PublicParameters;
 import threshold.mr04.data.Round1Message;
@@ -18,14 +24,16 @@ import threshold.mr04.data.Round2Message;
 import threshold.mr04.data.Round3Message;
 import threshold.mr04.data.Round4Message;
 
-public class Bob {
+public class Bob implements Serializable {
 
-    private final BigInteger q;
-    private final ECPoint G;
+	private static final long serialVersionUID = 8800505726362446507L;
+	
+	public final BigInteger q;
+    private final byte[] gRaw;
     private final SecureRandom rand;
     private final BigInteger keyShare;
     private final int kPrime;
-    private final ECDomainParameters CURVE;
+    transient private ECDomainParameters CURVE;
     private final BigInteger h1;
     private final BigInteger h2;
     private final BigInteger g;
@@ -35,12 +43,12 @@ public class Bob {
     private final BigInteger gPrime;
     private final BigInteger nPrime;
     private final BigInteger nPrimeSquared;
-    private final ECPoint Q;
+    private final byte[] qRaw;
     private final PaillierPublicKey alicesPaillierPubKey;
     private final PaillierPublicKey otherPaillierPubKey;
 
     private BigInteger kBob;
-    private ECPoint rBob;
+    private byte[] rBobRaw;
     private BigInteger ciphertext1;
     private BigInteger ciphertext2;
     private BigInteger mPrime;
@@ -48,10 +56,12 @@ public class Bob {
     public Bob(BigInteger keyShare, byte[] publicKey, SecureRandom rand, PublicParameters params) {
         this.rand = rand;
         this.keyShare = keyShare;
+        X9ECParameters CURVEparams = SECNamedCurves.getByName("secp256k1");
+        this.CURVE = new ECDomainParameters(CURVEparams.getCurve(), CURVEparams.getG(), CURVEparams.getN(),
+        		CURVEparams.getH());
         this.q = params.q;
-        this.G = params.G;
+        this.gRaw = params.G(this.CURVE.getCurve()).getEncoded();
         this.kPrime = params.kPrime;
-        this.CURVE = params.CURVE;
         this.h1 = params.h1;
         this.h2 = params.h2;
         g = params.alicesPaillierPubKey.g;
@@ -61,30 +71,59 @@ public class Bob {
         gPrime = params.otherPaillierPubKey.g;
         nPrime = params.otherPaillierPubKey.N;
         nPrimeSquared = nPrime.pow(2);
-        Q = CURVE.getCurve().decodePoint(publicKey);
+        qRaw = CURVE.getCurve().decodePoint(publicKey).getEncoded();
         alicesPaillierPubKey = params.alicesPaillierPubKey;
         otherPaillierPubKey = params.otherPaillierPubKey;
     }
+    
+    /**
+     * Always treat de-serialization as a full-blown constructor, by
+     * validating the final state of the de-serialized object.
+     */
+     private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
+       //always perform the default de-serialization first
+       aInputStream.defaultReadObject();
+       X9ECParameters CURVEparams = SECNamedCurves.getByName("secp256k1");
+       this.CURVE = new ECDomainParameters(CURVEparams.getCurve(), CURVEparams.getG(), CURVEparams.getN(),
+       		CURVEparams.getH());
+    }
 
-    Round2Message bobToAliceRound2(Round1Message input) {
+      /**
+      * This is the default implementation of writeObject.
+      * Customize if necessary.
+      */
+      private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
+        //perform the default serialization for all non-transient, non-static fields
+        aOutputStream.defaultWriteObject();
+      }
+
+    public Round2Message bobToAliceRound2(Round1Message input) {
         ciphertext1 = input.getCiphertext1();
         ciphertext2 = input.getCiphertext2();
         mPrime = input.getmPrime();
-        //VERIFY CIPHERTEXTS ARE VALID CIPHERTEXTS
+
+        if (!isElementOfZn(ciphertext1, nSquared)) {
+            throw new AssertionError();
+        }
+        
+        if (!isElementOfZn(ciphertext2, nSquared)) {
+            throw new AssertionError();
+        }
+        
         do {
             kBob = new BigInteger(256, rand);
         } while (kBob.compareTo(q) != -1);
-        rBob = G.multiply(kBob);
-        return new Round2Message(rBob);
+        rBobRaw = getG().multiply(kBob).getEncoded();
+        return new Round2Message(getRBob());
     }
 
     public Round4Message bobToAliceRound4(Round3Message input) {
-        ECPoint r = input.getR();
+        ECPoint r = input.getR(CURVE.getCurve());
         // verify that r * q = O
         if (!r.multiply(q).isInfinity()) {
             throw new AssertionError();
         }
-        // Ask Rosario. this is the equivalent of cheming that it's in Zp*
+
         if (r.getCurve() != CURVE.getCurve()) {
             throw new AssertionError();
         }
@@ -93,7 +132,7 @@ public class Bob {
         verifyZkp1(input);
 
         BigInteger zBob = kBob.modInverse(q);
-        BigInteger rPrime = r.normalize().getXCoord().toBigInteger().mod(q);
+        BigInteger rPrime = r.getX().toBigInteger().mod(q);
         BigInteger cBlind = randomFromZn(q.pow(5), rand);
         BigInteger cBlindq = cBlind.multiply(q);
         BigInteger rPrime2 = new BigInteger(kPrime, rand);
@@ -105,6 +144,7 @@ public class Bob {
         BigInteger rPrime1 = new BigInteger(kPrime, rand);
         BigInteger uPrime = Paillier.encrypt(zBob, otherPaillierPubKey, rPrime1);
 
+        long startTime = System.nanoTime();
         // zkp2
         BigInteger alpha = randomFromZn(q.pow(3), rand);
         BigInteger beta = randomFromZnStar(nPrime, rand);
@@ -123,10 +163,10 @@ public class Bob {
         BigInteger x1 = zBob;
         BigInteger x2 = zBob.multiply(keyShare);
         BigInteger x3 = cBlind;
-        ECPoint c = G.multiply(kBob);
-        ECPoint d = G;
-        ECPoint w1 = G;
-        ECPoint w2 = G.multiply(keyShare);
+        ECPoint c = getG().multiply(kBob);
+        ECPoint d = getG();
+        ECPoint w1 = getG();
+        ECPoint w2 = getG().multiply(keyShare);
         BigInteger m1 = uPrime;
         BigInteger m2 = u;
         BigInteger m3 = ciphertext1.modPow(mPrime, nSquared);
@@ -167,23 +207,26 @@ public class Bob {
         BigInteger t4 = e.multiply(rho2).add(nu);
         BigInteger t5 = e.multiply(x3).add(theta);
         BigInteger t6 = e.multiply(rho4).add(tau);
+        
+        System.out.println("create zkp2: " + (System.nanoTime() - startTime));
 
         return new Round4Message(u, uPrime, z1, z2, z3, y, e, s1, s2, s3, t1, t2, t3, t4, t5, t6);
     }
 
     private void verifyZkp1(Round3Message input) {
-        ECPoint r = input.getR();
+    	long startTime = System.nanoTime();
+        ECPoint r = input.getR(CURVE.getCurve());
         ECPoint c = r;
-        ECPoint d = G;
-        ECPoint w1 = rBob;
-        ECPoint w2 = Q.multiply(keyShare.modInverse(q));//G.multiply(aliceShare);
+        ECPoint d = getG();
+        ECPoint w1 = getRBob();
+        ECPoint w2 = getQ().multiply(keyShare.modInverse(q));//G.multiply(aliceShare);
 
         BigInteger m1 = ciphertext1;
         BigInteger m2 = ciphertext2;
 
         BigInteger z1 = input.getZ1();
         BigInteger z2 = input.getZ2();
-        ECPoint y = input.getY();
+        ECPoint y = input.getY(CURVE.getCurve());
         BigInteger e = input.getE();
         BigInteger s1 = input.getS1();
         BigInteger s2 = input.getS2();
@@ -226,5 +269,18 @@ public class Bob {
         if (!eRecovered.equals(e)) {
             throw new AssertionError();
         }
+        System.out.println("verifyZkp1: " + (System.nanoTime() - startTime));
+    }
+    
+    private ECPoint getRBob() {
+    	return CURVE.getCurve().decodePoint(rBobRaw);
+    }
+    
+    private ECPoint getG() {
+    	return CURVE.getCurve().decodePoint(gRaw);
+    }
+    
+    public ECPoint getQ() {
+    	return CURVE.getCurve().decodePoint(qRaw);
     }
 }
